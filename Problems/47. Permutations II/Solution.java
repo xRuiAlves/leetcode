@@ -1,15 +1,14 @@
-import java.util.LinkedList;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.*;
 
 class Solution {
     public List<List<Integer>> permuteUnique(int[] nums) {
         List<List<Integer>> res = new LinkedList<>();
-
         boolean[] used = new boolean[nums.length];
-        visit(nums, used, res, new LinkedList<Integer>());
+        Arrays.sort(nums);
 
-        return res.stream().distinct().collect(Collectors.toList());
+        visit(nums, used, res, new LinkedList<>());
+
+        return res;
     }
 
     private void visit(int[] nums, boolean[] used, List<List<Integer>> res, LinkedList<Integer> curr) {
@@ -28,6 +27,10 @@ class Solution {
             visit(nums, used, res, curr);
             curr.removeLast();
             used[i] = false;
+
+            while (i < (nums.length - 1) && nums[i] == nums[i + 1]) {
+                ++i;
+            }
         }
     }
 }
