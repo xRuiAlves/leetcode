@@ -1,3 +1,5 @@
+import java.util.*;
+
 class Solution {
     public List<List<Integer>> subsets(int[] nums) {
         int num_iters = (int) Math.pow(2, nums.length);
