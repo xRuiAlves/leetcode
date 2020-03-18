@@ -10,17 +10,20 @@
 class Solution {
     public List<Integer> inorderTraversal(TreeNode root) {
         List<Integer> res = new LinkedList<>();
-        visit(root, res);
-        return res;
-    }
+        Stack<TreeNode> stack = new Stack<>();
+        TreeNode curr = root;
 
-    private void visit(TreeNode node, List<Integer> res) {
-        if (node == null) {
-            return;
+        while (!stack.isEmpty() || curr != null) {
+            while (curr != null) {
+                stack.add(curr);
+                curr = curr.left;
+            }
+            
+            curr = stack.pop();
+            res.add(curr.val);
+            curr = curr.right;
         }
-
-        visit(node.left, res);
-        res.add(node.val);
-        visit(node.right, res);
+        
+        return res;
     }
 }
