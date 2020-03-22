@@ -1,106 +1,85 @@
 import java.util.*;
 
 class Solution {
-    private static final int[] BAD_RES = new int[]{};
-
     public int[] findOrder(int numCourses, int[][] prerequisites) {
-        HashMap<Integer, HashSet<Integer>> g = new HashMap<>();
-        boolean[] has_requisites = new boolean[numCourses];
+        ArrayList<HashSet<Integer>> graph = new ArrayList<>();
+        for (int i = 0; i < numCourses; ++i) {
+            graph.add(new HashSet<>());
+        }
 
+        boolean[] has_dependencies = new boolean[numCourses];
         for (int i = 0; i < prerequisites.length; ++i) {
             int from = prerequisites[i][1];
             int to = prerequisites[i][0];
-            g.putIfAbsent(from, new HashSet<>());
-            g.get(from).add(to);
-            has_requisites[to] = true;
+            graph.get(from).add(to);
+            has_dependencies[to] = true;
         }
 
-        if (graphHasCycles(g, numCourses)) {
-            return BAD_RES;
-        }
-
-        int new_root = numCourses;
-        HashSet<Integer> new_root_neighbors = new HashSet<>();
+        // Search for cycles
+        boolean[] depth_stack = new boolean[numCourses];
+        boolean[] visited = new boolean[numCourses];
         for (int i = 0; i < numCourses; ++i) {
-            if (!has_requisites[i]) {
-                new_root_neighbors.add(i);
+            if (hasCycles(graph, depth_stack, visited, i)) {
+                return new int[]{};
             }
         }
-        g.put(new_root, new_root_neighbors);
 
-        List<Integer> top_order = findTopOrder(g, numCourses + 1, new_root);
-        
-        int[] res = new int[numCourses];
+        // Add aux node connecting to all nodes with no dependencies
+        HashSet<Integer> neighbors = new HashSet<>();
         for (int i = 0; i < numCourses; ++i) {
-            res[i] = top_order.get(i + 1);
+            if (!has_dependencies[i]) {
+                neighbors.add(i);
+            }
         }
+        graph.add(neighbors);
 
+        List<Integer> top_order = getTopologicalOrder(graph);
+        top_order.remove(0);
+        int[] res = new int[numCourses];
+        for (int i = 0; i < top_order.size(); ++i) {
+            res[i] = top_order.get(i);
+        }
         return res;
     }
 
-    List<Integer> findTopOrder(HashMap<Integer, HashSet<Integer>> g, int num_verts, int start) {
+    private List<Integer> getTopologicalOrder(ArrayList<HashSet<Integer>> graph) {
         List<Integer> top_order = new LinkedList<>();
-        boolean[] visited = new boolean[num_verts];
-
-        visit(g, visited, start, top_order);
-
+        boolean[] visited = new boolean[graph.size()];
+        visit(graph, top_order, visited, graph.size() - 1);
         Collections.reverse(top_order);
         return top_order;
     }
 
-    public void visit(HashMap<Integer, HashSet<Integer>> g, boolean[] visited, int vert, List<Integer> top_order) {
-        if (visited[vert]) {
+    private void visit(ArrayList<HashSet<Integer>> graph, List<Integer> top_order, boolean[] visited, int node) {
+        if (visited[node]) {
             return;
         }
 
-        visited[vert] = true;
-
-        HashSet<Integer> neighbors = g.getOrDefault(vert, null);
-        if (neighbors != null) {
-            for (Integer neighbor : neighbors) {
-                visit(g, visited, neighbor, top_order);
-            }
+        visited[node] = true;
+        for (int neighbor : graph.get(node)) {
+            visit(graph, top_order, visited, neighbor);
         }
-
-        top_order.add(vert);
+        top_order.add(node);
     }
 
-    public boolean graphHasCycles(HashMap<Integer,HashSet<Integer>> g, int num_vert) {
-        boolean[] visited = new boolean[num_vert];
-        boolean[] depth_stack = new boolean[num_vert];
-
-        for (int i = 0; i < g.size(); ++i) {
-            if (graphHasCycles(g, i, visited, depth_stack)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public boolean graphHasCycles(HashMap<Integer, HashSet<Integer>> g, int vert, boolean[] visited, boolean[] depth_stack) {
-        if (!g.containsKey(vert)) {
-            return false;
-        }
-
-        if (depth_stack[vert]) {
+    private boolean hasCycles(ArrayList<HashSet<Integer>> graph, boolean[] depth_stack, boolean[] visited, int node) {
+        if (depth_stack[node]) {
             return true;
         }
-
-        if (visited[vert]) {
+        if (visited[node]) {
             return false;
         }
 
-        visited[vert] = true;
-        depth_stack[vert] = true;
+        depth_stack[node] = true;
+        visited[node] = true;
 
-        for (int neighbor : g.get(vert)) {
-            if (graphHasCycles(g, neighbor, visited, depth_stack)) {
+        for (int neighbor : graph.get(node)) {
+            if (hasCycles(graph, depth_stack, visited, neighbor)) {
                 return true;
             }
         }
 
-        depth_stack[vert] = false;
+        depth_stack[node] = false;
         return false;
     }
 }
