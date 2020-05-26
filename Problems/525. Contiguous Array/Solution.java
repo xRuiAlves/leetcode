@@ -1,23 +1,26 @@
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 class Solution {
+    private static final int UNVISITED = -2;
+
     public int findMaxLength(int[] nums) {
+        Map<Integer, Integer> sums = new HashMap<>();
         int best = 0;
-        int score = 0;
-        Map<Integer, Integer> occurences = new HashMap<>();
-        occurences.put(0, -1);
+        int curr = 0;
+        sums.put(0, -1);
 
         for (int i = 0; i < nums.length; ++i) {
-            score += nums[i] == 0 ? 1 : -1;
-
-            if (occurences.containsKey(score)) {
-                int last_index = occurences.get(score);
-                best = Math.max(best, i - last_index);
+            curr += nums[i] == 1 ? 1 : -1;
+            
+            int prev_occurence = sums.getOrDefault(curr, UNVISITED);
+            if (prev_occurence != UNVISITED) {
+                best = Math.max(best, i - prev_occurence);
             } else {
-                occurences.put(score, i);
+                sums.put(curr, i);
             }
         }
-        
+
         return best;
     }
 }
