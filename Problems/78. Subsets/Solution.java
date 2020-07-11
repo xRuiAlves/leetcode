@@ -1,22 +1,21 @@
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
 
 class Solution {
     public List<List<Integer>> subsets(int[] nums) {
+        List<List<Integer>> sets = new LinkedList<>();
         int num_iters = (int) Math.pow(2, nums.length);
         
-        List<List<Integer>> res = new ArrayList<>();
         for (int i = 0; i < num_iters; ++i) {
-            int num = i;
-            ArrayList<Integer> entry = new ArrayList<>();
+            List<Integer> set = new LinkedList<>();
             for (int j = 0; j < nums.length; ++j) {
-                if (num % 2 == 1) {
-                    entry.add(nums[j]);
+                if ((i & (1 << j)) != 0) {
+                    set.add(nums[j]);
                 }
-                num /= 2;
             }
-            res.add(entry);
+            sets.add(set);
         }
         
-        return res;
+        return sets;
     }
 }
