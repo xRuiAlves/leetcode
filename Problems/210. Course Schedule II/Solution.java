@@ -1,85 +1,63 @@
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
 
 class Solution {
+    private static final class LoopException extends Exception { }
+
     public int[] findOrder(int numCourses, int[][] prerequisites) {
-        ArrayList<HashSet<Integer>> graph = new ArrayList<>();
-        for (int i = 0; i < numCourses; ++i) {
-            graph.add(new HashSet<>());
-        }
+        ArrayList<ArrayList<Integer>> graph = buildGraph(numCourses, prerequisites);
 
-        boolean[] has_dependencies = new boolean[numCourses];
-        for (int i = 0; i < prerequisites.length; ++i) {
-            int from = prerequisites[i][1];
-            int to = prerequisites[i][0];
-            graph.get(from).add(to);
-            has_dependencies[to] = true;
-        }
-
-        // Search for cycles
-        boolean[] depth_stack = new boolean[numCourses];
         boolean[] visited = new boolean[numCourses];
-        for (int i = 0; i < numCourses; ++i) {
-            if (hasCycles(graph, depth_stack, visited, i)) {
-                return new int[]{};
+        boolean[] in_depth = new boolean[numCourses];
+
+        ArrayList<Integer> courses = new ArrayList<>();
+
+        try {
+            for (int i = 0; i < numCourses; ++i) {
+                if (!visited[i]) {
+                    ArrayList<Integer> sub_course_path = new ArrayList<>();
+                    buildCoursePath(graph, i, visited, in_depth, sub_course_path);
+                    courses.addAll(sub_course_path);
+                }
             }
+        } catch (LoopException e) {
+            return new int[]{};
         }
 
-        // Add aux node connecting to all nodes with no dependencies
-        HashSet<Integer> neighbors = new HashSet<>();
-        for (int i = 0; i < numCourses; ++i) {
-            if (!has_dependencies[i]) {
-                neighbors.add(i);
-            }
-        }
-        graph.add(neighbors);
-
-        List<Integer> top_order = getTopologicalOrder(graph);
-        top_order.remove(0);
-        int[] res = new int[numCourses];
-        for (int i = 0; i < top_order.size(); ++i) {
-            res[i] = top_order.get(i);
-        }
-        return res;
+        Collections.reverse(courses);
+        return courses.stream().mapToInt(i -> i).toArray();
     }
 
-    private List<Integer> getTopologicalOrder(ArrayList<HashSet<Integer>> graph) {
-        List<Integer> top_order = new LinkedList<>();
-        boolean[] visited = new boolean[graph.size()];
-        visit(graph, top_order, visited, graph.size() - 1);
-        Collections.reverse(top_order);
-        return top_order;
-    }
-
-    private void visit(ArrayList<HashSet<Integer>> graph, List<Integer> top_order, boolean[] visited, int node) {
+    private void buildCoursePath(ArrayList<ArrayList<Integer>> graph, int node, boolean[] visited, boolean[] in_depth, ArrayList<Integer> sub_course_path) throws LoopException {
+        if (in_depth[node]) {
+            throw new LoopException();
+        }
         if (visited[node]) {
             return;
         }
 
+        in_depth[node] = true;
         visited[node] = true;
+
         for (int neighbor : graph.get(node)) {
-            visit(graph, top_order, visited, neighbor);
+            buildCoursePath(graph, neighbor, visited, in_depth, sub_course_path);
         }
-        top_order.add(node);
+
+        sub_course_path.add(node);
+
+        in_depth[node] = false;
     }
 
-    private boolean hasCycles(ArrayList<HashSet<Integer>> graph, boolean[] depth_stack, boolean[] visited, int node) {
-        if (depth_stack[node]) {
-            return true;
-        }
-        if (visited[node]) {
-            return false;
+    private ArrayList<ArrayList<Integer>> buildGraph(int numCourses, int[][] prerequisites) {
+        ArrayList<ArrayList<Integer>> graph = new ArrayList<>();
+        for (int i = 0; i < numCourses; ++i) {
+            graph.add(new ArrayList<>());
         }
 
-        depth_stack[node] = true;
-        visited[node] = true;
-
-        for (int neighbor : graph.get(node)) {
-            if (hasCycles(graph, depth_stack, visited, neighbor)) {
-                return true;
-            }
+        for (int[] prereq : prerequisites) {
+            graph.get(prereq[1]).add(prereq[0]);
         }
 
-        depth_stack[node] = false;
-        return false;
+        return graph;
     }
 }
