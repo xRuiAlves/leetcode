@@ -1,12 +1,24 @@
+import java.util.TreeSet;
+
 class Solution {
     public boolean containsNearbyAlmostDuplicate(int[] nums, int k, int t) {
+        if (k < 0 || t < 0) {
+            return false;
+        }
+
+        TreeSet<Long> visited = new TreeSet<>();
+
         for (int i = 0; i < nums.length; ++i) {
-            for (int j = 1; j <= k && i + j < nums.length; ++j) {
-                if (Math.abs((long)nums[i] - nums[i + j]) <= t) {
-                    return true;
-                }
+            if (!visited.subSet((long) nums[i] - t, (long) nums[i] + t + 1).isEmpty()) {
+                return true;
+            }
+
+            visited.add((long) nums[i]);
+            if (visited.size() > k) {
+                visited.remove((long) nums[i - k]);
             }
         }
+
         return false;
     }
 }
