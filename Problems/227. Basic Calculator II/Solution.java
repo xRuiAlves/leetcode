@@ -2,38 +2,42 @@ import java.util.Stack;
 
 class Solution {
     public int calculate(String s) {
-        s = s.replaceAll("\\s+", "");
-        int sum = 0;
-        char op = '+';
-        Stack<Integer> stack = new Stack<Integer>();
+        Stack<Integer> partials = new Stack<>();
+        int curr_num = 0;
+        char op = ' ';
 
-        for (int i = 0; i < s.length(); ++i) {
-            char c = s.charAt(i);
-            boolean is_digit = Character.isDigit(c);
-
-            if (is_digit) {
-                sum = sum*10 + (c - '0');
+        for (char c : s.toCharArray()) {
+            if (c == ' ') {
+                continue;
             }
 
-            if (!is_digit || i == s.length() - 1) {
-                if (op == '+') {
-                    stack.push(sum);
-                } else if (op == '-') {
-                    stack.push(-sum);
-                } else if (op == '*') {
-                    stack.push(stack.pop() * sum);
-                } else if (op == '/') {
-                    stack.push(stack.pop() / sum);
-                }
-                sum = 0;
+            if (Character.isDigit(c)) {
+                curr_num = curr_num*10 + (c - '0');
+            } else {
+                applyOp(curr_num, op, partials);
+                curr_num = 0;
                 op = c;
             }
         }
-
+        applyOp(curr_num, op, partials);
+        
         int res = 0;
-        while(!stack.isEmpty()) {
-            res += stack.pop();
+        while (!partials.isEmpty()) {
+            res += partials.pop();
         }
+        
         return res;
+    }
+
+    private void applyOp(int num, char op, Stack<Integer> partials) {
+        if (op == '-') {
+            partials.add(-num);
+        } else if (op == '*') {
+            partials.add(partials.pop()*num);
+        } else if (op == '/') {
+            partials.add(partials.pop()/num);
+        } else {
+            partials.add(num);
+        }
     }
 }
