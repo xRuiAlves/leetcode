@@ -1,30 +1,29 @@
-import java.util.ArrayList;
 import java.util.Arrays;
 
 class Solution {
     public int[][] reconstructQueue(int[][] people) {
-        if (people == null || people.length == 0) {
-            return people;
-        }
-
-        ArrayList<int[]> queue = new ArrayList<>();
-
         Arrays.sort(people, (p1, p2) -> {
             if (p1[0] == p2[0]) {
-                return p1[1] - p2[1];
+                return p2[1] - p1[1];
             }
-            return p2[0] - p1[0];
+            return p1[0] - p2[0];
         });
 
-        for (int[] person : people) {
-            queue.add(person[1], person);
+        int[][] queue = new int[people.length][];
+
+        for (int i = 0; i < people.length; ++i) {
+            int k = people[i][1] + 1;
+
+            int queue_index;
+            for (queue_index = 0; k > 0; ++queue_index) {
+                if (queue[queue_index] == null) {
+                    --k;
+                }
+            }
+            
+            queue[queue_index - 1] = people[i];
         }
 
-        int[][] res = new int[people.length][2];
-        for (int i = 0; i < queue.size(); ++i) {
-            res[i] = queue.get(i);
-        }
-
-        return res;
+        return queue;
     }
 }
