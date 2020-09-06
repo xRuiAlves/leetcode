@@ -1,40 +1,47 @@
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+ * }
+ */
+
 class Solution {
     public ListNode mergeKLists(ListNode[] lists) {
-        ListNode res = null;
-        ListNode list_head = res;
-        boolean progress = true;
-        while (progress) {
-            progress = false;
-            int best_node_idx = -1;
-            int min = Integer.MAX_VALUE;
+        if (lists.length == 0) {
+            return null;
+        }
+        
+        PriorityQueue<ListNode> queue = new PriorityQueue<>(lists.length, (n1, n2) -> n1.val - n2.val);
 
-            for (int i = 0; i < lists.length; ++i) {
-                if (lists[i] == null) {
-                    continue;
-                }
-                progress = true;
-
-                if (lists[i].val < min) {
-                    best_node_idx = i;
-                    min = lists[i].val;
-                }
+        for (ListNode list_head : lists) {
+            if (list_head != null) {
+                queue.offer(list_head);
             }
-
-            if (!progress || min == Integer.MAX_VALUE) {
-                break;
-            }
-
-            ListNode new_node = new ListNode(min);
-            if (res == null) {
-                res = new_node;
-                list_head = res;
-            } else {
-                res.next = new_node;
-                res = res.next;
-            }
-            lists[best_node_idx] = lists[best_node_idx].next;
         }
 
-        return list_head;
+        if (queue.isEmpty()) {
+            return null;
+        }
+
+        ListNode head = queue.poll();
+        ListNode tail = head;
+        if (head.next != null) {
+            queue.offer(head.next);
+        }
+
+        while (!queue.isEmpty()) {
+            tail.next = queue.poll();
+            tail = tail.next;
+
+            if (tail.next != null) {
+                queue.offer(tail.next);
+            }
+        }
+
+        return head;
     }
 }
