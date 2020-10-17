@@ -1,3 +1,3 @@
-# leetcode
+# LeetCode
 
-Solutions proposals for leetcode problems in `Java`, to train for coding interviews.
+Solutions proposals for leetcode problems in `Java` and `Scala`.
