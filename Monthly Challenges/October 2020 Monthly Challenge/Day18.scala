@@ -1,4 +1,4 @@
-object Solution {
+object Day18 {
     def maxProfit(k: Int, prices: Array[Int]): Int = {
         if (k == 0 || prices.length < 2) return 0
         val max_transactions = Math.min(k, prices.length / 2);
