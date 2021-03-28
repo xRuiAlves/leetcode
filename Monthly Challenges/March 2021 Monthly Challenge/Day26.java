@@ -1,83 +1,55 @@
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.LinkedList;
+import java.util.List;
 
-public class Solution {
-    public List<List<Integer>> pacificAtlantic(int[][] matrix) {
-        if (matrix.length == 0 || matrix[0].length == 0) {
-            return new LinkedList<>();
-        }
+public class Day26 {
+    private static final char ALPHABET_START = 'a';
+    private static final char ALPHABET_END = 'z';
+    private static final int ALPHABET_SIZE = ALPHABET_END - ALPHABET_START + 1;
 
-        Set<Integer> validCellIds = new HashSet<>();
-        for (int i = 0; i < matrix.length; ++i) {
-            for (int j = 0; j < matrix[i].length; ++j) {
-                if (isValidCell(matrix, i, j, validCellIds)) {
-                    validCellIds.add(i * matrix[i].length + j);
-                }
+    public List<String> wordSubsets(String[] A, String[] B) {
+        int[] bUnifiedCharCount = getUnifiedCharCount(B);
+
+        List<String> res = new LinkedList<>();
+        for (String s : A) {
+            int[] sCharCount = countChars(s);
+            if (isSubset(sCharCount, bUnifiedCharCount)) {
+                res.add(s);
             }
         }
-
-        return validCellIds
-            .stream()
-            .map(cellId -> {
-                int row = cellId / matrix[0].length;
-                int col = cellId % matrix[0].length;
-                return Arrays.asList(row, col);
-            })
-            .collect(Collectors.toList());
+        
+        return res;
     }
 
-    private boolean isValidCell(int[][] matrix, int i, int j, Set<Integer> validCellIds) {
-        Set<Integer> visited = new HashSet<>();
-        Stack<int[]> toVisit = new Stack<>();
-        toVisit.push(new int[]{i, j});
-        boolean foundPacific = false;
-        boolean foundAtlantic = false;
+    private static int[] countChars(String s) {
+        int[] counts = new int[ALPHABET_SIZE];
 
-        while (!toVisit.isEmpty() && !(foundAtlantic && foundPacific)) {
-            int[] curr = toVisit.pop();
-            int id = curr[0] * matrix[i].length + curr[1];
+        for (char c : s.toCharArray()) {
+            ++counts[c - ALPHABET_START];
+        }
 
-            foundPacific = foundPacific || isPacificCell(matrix, curr[0], curr[1]);
-            foundAtlantic = foundAtlantic || isAtlanticCell(matrix, curr[0], curr[1]);
+        return counts;
+    }
 
-            if (validCellIds.contains(id)) {
-                return true;
-            }
+    private static int[] getUnifiedCharCount(String[] arr) {
+        int[] unifiedCharCount = countChars(arr[0]);
 
-            if (visited.contains(id)) {
-                continue;
-            }
-
-            visited.add(id);
-
-            List<int[]> neighbors = Arrays.asList(
-                new int[]{curr[0] - 1, curr[1]},
-                new int[]{curr[0] + 1, curr[1]},
-                new int[]{curr[0], curr[1] - 1},
-                new int[]{curr[0], curr[1] + 1}
-            );
-
-            for (int[] neighbor : neighbors) {
-                if (isCellInBounds(matrix, neighbor[0], neighbor[1])
-                    && matrix[neighbor[0]][neighbor[1]] <= matrix[curr[0]][curr[1]]
-                ) {
-                    toVisit.push(neighbor);
-                }
+        for (int i = 1; i < arr.length; ++i) {
+            int[] currCharCount = countChars(arr[i]);
+            for (int j = 0; j < unifiedCharCount.length; ++j) {
+                unifiedCharCount[j] = Math.max(unifiedCharCount[j], currCharCount[j]);
             }
         }
 
-        return foundAtlantic && foundPacific;
+        return unifiedCharCount;
     }
-
-    private boolean isCellInBounds(int[][] matrix, int i, int j) {
-        return i >= 0 && j >= 0 && i < matrix.length && j < matrix[i].length;
-    }
-
-    private boolean isPacificCell(int[][] matrix, int i, int j) {
-        return i == 0 || j == 0;
-    }
-
-    private boolean isAtlanticCell(int[][] matrix, int i, int j) {
-        return i == matrix.length - 1 || j == matrix[i].length - 1;
+    
+    private static boolean isSubset(int[] charCountsA, int[] charCountsB) {
+        for (int i = 0; i < charCountsA.length; ++i) {
+            if (charCountsA[i] < charCountsB[i]) {
+                return false;
+            }
+        }
+        
+        return true;
     }
 }
