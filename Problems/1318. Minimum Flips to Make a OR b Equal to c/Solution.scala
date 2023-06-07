@@ -8,13 +8,8 @@ object Solution {
     val maskB = b & mask
     val maskC = c & mask
 
-    if (maskC != 0) {
-      if (maskA != 0 || maskB != 0) 0
-      else 1
-    } else {
-      if (maskA != 0 && maskB != 0) 2
-      else if (maskA == 0 && maskB == 0) 0
-      else 1
-    }
+    if ((maskA | maskB) == maskC) 0
+    else if ((maskA & maskB) == 0) 1
+    else 2
   }
 }
