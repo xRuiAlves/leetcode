@@ -1,26 +1,16 @@
-import scala.collection.mutable.ListBuffer
-
 object Solution {
-    def summaryRanges(nums: Array[Int]): List[String] = {
-        if (nums.isEmpty) return List()
+  type Range = (Int, Int)
 
-        val ranges = new ListBuffer[(Int, Int)]()
-        var from = nums(0)
-        var to = nums(0)
+  private[this] final def formatRange(range: Range): String = range match {
+    case (l, b) if l != b => s"$l->$b"
+    case (l, _) => l.toString
+  }
 
-        for (i <- 1 until nums.length) {
-            if (nums(i) == to + 1) to = nums(i)
-            else {
-                ranges.addOne(from, to)
-                from = nums(i)
-                to = nums(i)
-            }
-        }
-        ranges.addOne(from, to)
-
-        ranges.map(range => 
-            if (range._1 == range._2) range._1.toString
-            else s"${range._1}->${range._2}"
-        ).toList
+  def summaryRanges(nums: Array[Int]): List[String] = nums.
+    foldLeft(List.empty[Range]) {
+      case ((l, r) :: tail, curr) if r == curr - 1 => (l, curr) :: tail
+      case (list, curr) => (curr, curr) :: list
     }
+    .map(formatRange)
+    .reverse
 }
