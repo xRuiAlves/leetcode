@@ -4,11 +4,7 @@ class SnapshotArray(_length: Int) {
   private[this] var currSnapshot = 0
   private[this] val storage: Array[mutable.TreeMap[Int, Int]] = 0
     .until(_length)
-    .map(_ => {
-      val snapshotsMap = mutable.TreeMap.empty[Int, Int]
-      snapshotsMap.put(0, 0)
-      snapshotsMap
-    })
+    .map(_ => List((0,0)).to(mutable.TreeMap))
     .toArray
 
   def set(index: Int, value: Int) {
@@ -20,5 +16,5 @@ class SnapshotArray(_length: Int) {
     currSnapshot - 1
   }
 
-  def get(index: Int, snapId: Int): Int = storage(index).rangeTo(snapId).last._2
+  def get(index: Int, snapId: Int): Int = storage(index).maxBefore(snapId + 1).get._2
 }
